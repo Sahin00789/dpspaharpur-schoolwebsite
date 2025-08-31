@@ -1,0 +1,149 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper function to check if user is admin
+    function isAdmin() {
+      return request.auth != null && 
+             request.auth.token.email.matches('.*@[^.]*\\.(com|org|net|edu|gov)(\\.\\w{2,3})?$');
+    }
+
+    // Publicly readable documents (e.g., site content)
+    match /documents/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Config like redirect links
+    match /config/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // Uploaded documents metadata (PDFs)
+    match /documents/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Media (photos/videos) metadata
+    match /media/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // Contact form messages - public access
+    match /messages/{messageId} {
+      // Allow public read for testing (restrict to admin in production)
+      allow read: if true; // For now, make readable by anyone
+      
+      // Allow public message submission with validation
+      allow create: if (
+        // Required fields validation
+        request.resource.data.name is string &&
+        request.resource.data.name.size() > 0 &&
+        request.resource.data.name.size() < 100 &&
+        
+        request.resource.data.email is string &&
+        request.resource.data.email.matches('^[^@]+@[^@]+\\.[^@]+$') &&
+        
+        request.resource.data.message is string &&
+        request.resource.data.message.size() > 0 &&
+        request.resource.data.message.size() < 2000 &&
+        
+        // Optional phone field
+        (!request.resource.data.phone || 
+         (request.resource.data.phone is string && 
+          request.resource.data.phone.size() < 20)) &&
+          
+        // System fields
+        request.resource.data.status == 'unread' &&
+        request.resource.data.createdAt is timestamp &&
+        request.resource.data.updatedAt is timestamp
+      );
+      
+      // Only admins can update/delete messages
+      allow update, delete: if isAdmin();
+      
+      // Subcollections
+      match /{document=**} {
+        allow read: if isAdmin();
+        allow write: if isAdmin();
+      }
+    }
+
+    // Notices collection
+    match /notices/{noticeId} {
+      // Allow public read access
+      allow read: if true;
+      
+      // Only admins can create/update/delete notices
+      allow create: if isAdmin() && 
+        request.resource.data.keys().hasAll(['title', 'content', 'isActive']) &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0 &&
+        request.resource.data.content is string &&
+        request.resource.data.isActive is bool;
+        
+      allow update: if isAdmin() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['title', 'content', 'isActive', 'updatedAt']) &&
+        request.resource.data.title is string &&
+        request.resource.data.title.size() > 0 &&
+        request.resource.data.content is string &&
+        request.resource.data.isActive is bool;
+        
+      allow delete: if isAdmin();
+      
+      // Automatically set timestamps
+      match /{document=**} {
+        allow read: if true;
+        allow write: if false; // No direct writes to subcollections
+      }
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // Allow read if user is authenticated and requesting their own data
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow create if user is creating their own document
+      allow create: if request.auth != null && 
+                    request.auth.uid == userId && 
+                    request.resource.data.uid == userId;
+      
+      // Allow update if user is updating their own document
+      allow update: if request.auth != null && 
+                    request.auth.uid == userId && 
+                    request.resource.data.uid == userId;
+      
+      // Subcollections - same rules as parent
+      match /{document=**} {
+        allow read, write: if request.auth != null && request.auth.uid == userId;
+      }
+    }
+
+    // Admins collection
+    match /admins/{uid} {
+      allow read: if request.auth != null && request.auth.uid == uid;
+      allow write: if isAdmin();
+    }
+    
+    // Notices collection
+    match /notices/{noticeId} {
+      // Allow public read
+      allow read: if true;
+      
+      // Only allow create, update, delete for admins
+      allow create: if isAdmin() && 
+                   request.resource.data.title != null &&
+                   request.resource.data.content != null &&
+                   request.resource.data.createdAt != null;
+                   
+      allow update: if isAdmin() &&
+                   request.resource.data.title != null &&
+                   request.resource.data.content != null &&
+                   request.resource.data.updatedAt != null;
+                   
+      allow delete: if isAdmin();
+    }
+  }
+}

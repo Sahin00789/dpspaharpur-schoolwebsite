@@ -1,0 +1,67 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Dina Public School - Empowering young minds with quality education and holistic development." />
+    <meta name="theme-color" content="#1e40af" />
+    <meta name="author" content="Dina Public School" />
+    <meta name="keywords" content="school, education, learning, Dina Public School, academics" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://dinapublicschool.edu/" />
+    <meta property="og:title" content="Dina Public School | Excellence in Education" />
+    <meta property="og:description" content="Empowering young minds with quality education and holistic development." />
+    <meta property="og:image" content="/og-image.jpg" />
+
+    <!-- Twitter -->
+    <meta property="twitter:card" content="summary_large_image" />
+    <meta property="twitter:url" content="https://dinapublicschool.edu/" />
+    <meta property="twitter:title" content="Dina Public School | Excellence in Education" />
+    <meta property="twitter:description" content="Empowering young minds with quality education and holistic development." />
+    <meta property="twitter:image" content="/og-image.jpg" />
+
+    <!-- PWA -->
+    <link rel="manifest" href="/manifest.json" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+
+    <!-- Preconnect to external resources -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    
+    <title>Dina Public School | Excellence in Education</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" as="style" href="/src/index.css" />
+    <style>
+      /* Critical CSS */
+      body { font-family: 'Inter', sans-serif; margin: 0; padding: 0; }
+      #root { min-height: 100vh; display: flex; flex-direction: column; }
+      .font-heading { font-family: 'Poppins', sans-serif; }
+      
+      /* Smooth scrolling for anchor links */
+      html { scroll-behavior: smooth; }
+      
+      /* Remove focus for mouse users, keep for keyboard */
+      .focus-visible:focus:not(:focus-visible) { outline: none; box-shadow: none; }
+    </style>
+  </head>
+  <body class="antialiased text-gray-900 bg-white">
+    <div id="root"></div>
+    <script type="module" src="/src/main.jsx"></script>
+    
+    <!-- Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-XXXXXXXXXX"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+      gtag('config', 'G-XXXXXXXXXX');
+    </script>
+  </body>
+</html>
