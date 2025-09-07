@@ -67,7 +67,7 @@ function App() {
         <div className="min-h-screen bg-gray-50 flex flex-col">
           {!isAdminRoute && <Navbar />}
           
-          <main className="flex-grow pt-0 pb-16">
+          <main className="flex-grow">
             <AnimatePresence mode="wait">
               <Routes key={location.pathname} location={location}>
                 {/* Public Routes */}

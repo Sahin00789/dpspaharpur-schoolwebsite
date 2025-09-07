@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown } from "react-icons/fi";
-import { FaSchool } from "react-icons/fa";
+import { FiMenu, FiX, FiUser, FiLogOut, FiChevronDown, FiBook, FiBookOpen, FiImage, FiInfo, FiMapPin, FiMail, FiHome } from "react-icons/fi";
+import { FaSchool, FaChalkboardTeacher, FaBell, FaGraduationCap, FaUniversity, FaImages, FaInfoCircle, FaMapMarkerAlt, FaEnvelope } from "react-icons/fa";
 import { useAuth } from "../contexts/AuthContext";
 import { toast } from "react-hot-toast";
 
@@ -21,12 +21,17 @@ const menuItem = {
 };
 
 const mobileLinkVariant = {
-  initial: { x: -20, opacity: 0 },
-  animate: { 
-    x: 0, 
+  initial: { y: -10, opacity: 0 },
+  animate: (i) => ({
+    y: 0,
     opacity: 1,
-    transition: { duration: 0.2 }
-  }
+    transition: {
+      delay: 0.05 * i,
+      duration: 0.3,
+      ease: "easeOut"
+    }
+  }),
+  exit: { y: -10, opacity: 0, transition: { duration: 0.2 } }
 };
 
 const dropdownVariants = {
@@ -82,26 +87,61 @@ const MenuLink = ({ to, label }) => (
   </motion.div>
 );
 
-const MobileLink = ({ to, children, onClick }) => (
-  <motion.div
-    variants={mobileLinkVariant}
-    className="border-b border-gray-100 last:border-0"
-  >
-    <NavLink
-      to={to}
-      onClick={onClick}
-      className={({ isActive }) =>
-        `block px-6 py-3.5 text-base font-medium transition-colors ${
-          isActive
-            ? 'text-blue-600 bg-blue-50/50 font-semibold border-r-4 border-blue-600'
-            : 'text-gray-700 hover:bg-gray-50/50'
-        }`
-      }
+const MobileLink = ({ to, children, onClick, index = 0, icon: Icon, color = 'text-gray-600' }) => {
+  return (
+    <motion.div
+      custom={index}
+      variants={mobileLinkVariant}
+      className="border-b border-gray-100 last:border-0"
+      whileHover={{ scale: 1.02 }}
+      whileTap={{ scale: 0.98 }}
     >
-      {children}
-    </NavLink>
-  </motion.div>
-);
+      <NavLink
+        to={to}
+        onClick={onClick}
+        className={({ isActive }) =>
+          `relative flex items-center px-6 py-4 text-base font-medium transition-all group ${
+            isActive
+              ? 'bg-gradient-to-r from-blue-50 to-blue-100/50 font-semibold pl-8 text-blue-700'
+              : 'text-gray-700 hover:bg-gray-50/80 hover:pl-8'
+          }`
+        }
+      >
+        {({ isActive }) => (
+          <>
+            <motion.span 
+              className={`w-8 h-8 rounded-lg flex items-center justify-center mr-3 ${isActive ? 'bg-white shadow-sm' : 'bg-white/50 group-hover:bg-white/80'} transition-all`}
+              whileHover={{ scale: 1.1 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              <Icon className={`${color} ${isActive ? 'opacity-100' : 'opacity-70 group-hover:opacity-100'}`} size={18} />
+            </motion.span>
+            <span className="relative z-10 flex-1">{children}</span>
+            {isActive && (
+              <motion.span 
+                layoutId="activeIndicator"
+                className="absolute left-0 top-0 h-full w-1.5 bg-gradient-to-b from-blue-500 to-blue-600 rounded-r shadow-sm"
+                transition={{
+                  type: "spring",
+                  stiffness: 500,
+                  damping: 30
+                }}
+              />
+            )}
+            <motion.span 
+              className="opacity-0 group-hover:opacity-100 text-gray-400"
+              initial={{ x: -5 }}
+              animate={{ x: isActive ? 5 : 0 }}
+              transition={{ type: 'spring', stiffness: 500, damping: 30 }}
+            >
+              <FiChevronDown className={`transform ${isActive ? 'rotate-90' : 'rotate-0'} transition-transform`} />
+            </motion.span>
+          </>
+        )}
+      </NavLink>
+    </motion.div>
+  );
+};
 
 export default function Navbar() {
   const [isOpen, setIsOpen] = useState(false);
@@ -113,13 +153,14 @@ export default function Navbar() {
   const isAuthenticated = !!user;
   
   const navLinks = [
-    { to: "/academics", label: "Academics" },
-    { to: "/notices", label: "Notices" },
-    { to: "/gallery", label: "Gallery" },
-    { to: "/about", label: "About" },
-    { to: "/campuses", label: "Campuses" },
-    { to: "/contact", label: "Contact" },
-    { to: "/admission", label: "Admissions" },
+    { to: "/", label: "Home", icon: FiHome, color: "text-blue-500" },
+    { to: "/academics", label: "Academics", icon: FaChalkboardTeacher, color: "text-purple-500" },
+    { to: "/notices", label: "Notices", icon: FaBell, color: "text-yellow-500" },
+    { to: "/gallery", label: "Gallery", icon: FaImages, color: "text-pink-500" },
+    { to: "/about", label: "About", icon: FaInfoCircle, color: "text-teal-500" },
+    { to: "/campuses", label: "Campuses", icon: FaMapMarkerAlt, color: "text-red-500" },
+    { to: "/contact", label: "Contact", icon: FaEnvelope, color: "text-indigo-500" },
+    { to: "/admission", label: "Admissions", icon: FaGraduationCap, color: "text-green-500" },
   ];
 
   const handleLogout = async () => {
@@ -221,9 +262,9 @@ export default function Navbar() {
         scrolled ? 'bg-white/95 backdrop-blur-sm shadow-sm py-2' : 'bg-white/90 py-4'
       }`}
     >
-      <div className="container mx-auto px-4 md:px-6">
-        <div className="flex items-center justify-between h-16">
-          <Link to="/" className="group flex-shrink-0">
+      <div className="container mx-auto px-4 md:px-2">
+        <div className="flex items-center justify-between h-16 ">
+          <Link to="/" className="group flex-shrink-0 mr-6">
             <div className="flex items-center space-x-3">
              
               <div>
@@ -289,7 +330,7 @@ export default function Navbar() {
             ) : (
               <Link 
                 to="/admin/login"
-                className="ml-4 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
+                className=" w-[130px] text-center px-4 py-2 text-md font-medium text-blue-600 hover:text-blue-700 border border-blue-600 rounded-lg hover:bg-blue-50 transition-colors"
               >
                 Admin Login
               </Link>
@@ -311,35 +352,95 @@ export default function Navbar() {
       <AnimatePresence>
         {isOpen && (
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20, transition: { duration: 0.2 } }}
-            transition={{ duration: 0.3, ease: "easeInOut" }}
-            className="md:hidden bg-white shadow-xl rounded-b-xl overflow-hidden"
+            initial={{ opacity: 0, y: -20, scale: 0.98 }}
+            animate={{ 
+              opacity: 1, 
+              y: 0, 
+              scale: 1,
+              transition: { 
+                duration: 0.3, 
+                ease: [0.16, 1, 0.3, 1],
+                when: "beforeChildren",
+                staggerChildren: 0.05
+              }
+            }}
+            exit={{ 
+              opacity: 0, 
+              y: -20, 
+              scale: 0.98,
+              transition: { 
+                duration: 0.2,
+                when: "afterChildren"
+              } 
+            }}
+            className="md:hidden h-screen mt-4 bg-gradient-to-b from-white/95 to-white/90 backdrop-blur-xl shadow-2xl rounded-b-2xl overflow-hidden border border-white/20"
+            style={{
+              WebkitBackdropFilter: 'blur(20px)',
+              backdropFilter: 'blur(20px)',
+              boxShadow: '0 10px 30px -10px rgba(0, 0, 0, 0.08)',
+              maxHeight: 'calc(100vh - 4rem)',
+              overflowY: 'auto',
+              position: 'fixed',
+              top: '4rem',
+              left: 0,
+              right: 0
+            }}
           >
-            <div className="px-4 pt-2 pb-3 space-y-1">
-              {navLinks.map((link) => (
-                <MobileLink key={link.to} to={link.to} onClick={() => setIsOpen(false)}>
+            <div className="px-4 pt-2 pb-6 space-y-1" style={{ minHeight: 'calc(100vh - 6rem)' }}>
+             
+              {navLinks.map((link, index) => (
+                <MobileLink 
+                  key={link.to} 
+                  to={link.to} 
+                  onClick={() => setIsOpen(false)}
+                  index={index}
+                  icon={link.icon}
+                  color={link.color}
+                >
                   {link.label}
                 </MobileLink>
               ))}
               {isAuthenticated && isAdmin && (
-                <MobileLink to="/admin" onClick={() => setIsOpen(false)}>
+                <MobileLink 
+                  to="/admin" 
+                  onClick={() => setIsOpen(false)}
+                  icon={FiUser}
+                  color="text-indigo-500"
+                >
                   Dashboard
                 </MobileLink>
               )}
-              {isAuthenticated && (
-                <button
+              {isAuthenticated ? (
+                <motion.button
                   onClick={(e) => {
                     e.preventDefault();
                     setIsOpen(false);
                     handleLogout();
                   }}
-                  className="w-full flex items-center px-4 py-3 text-base text-red-600 hover:bg-red-50"
+                  className="w-full flex items-center px-6 py-4 text-base text-red-600 hover:bg-red-50/80 transition-colors"
+                  variants={mobileLinkVariant}
+                  custom={navLinks.length + 1}
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
                 >
-                  <FiLogOut className="mr-3 h-5 w-5 text-red-400" />
+                  <FiLogOut className="mr-3 h-5 w-5 text-red-400 flex-shrink-0" />
                   <span>Sign out</span>
-                </button>
+                </motion.button>
+              ) : (
+                <motion.div
+                  variants={mobileLinkVariant}
+                  custom={navLinks.length + 1}
+                  className="px-6 py-2"
+                >
+                  <Link
+                    to="/admin/login"
+                    onClick={() => setIsOpen(false)}
+                    className="w-full flex items-center justify-center px-4 py-3 rounded-lg text-sm font-medium text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 shadow-sm transition-all"
+                  >
+                    <FiUser className="mr-2 h-4 w-4" />
+                    Admin Login
+                  </Link>
+                </motion.div>
               )}
             </div>
           </motion.div>
