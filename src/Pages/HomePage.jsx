@@ -4,6 +4,7 @@ import { FiArrowRight, FiAward, FiBookOpen, FiUsers, FiCalendar } from 'react-ic
 import { toast } from 'react-hot-toast';
 import ImageSlider from '../components/ImageSlider';
 import Footer from '../components/Footer';
+import { SLIDER_IMAGES } from '../data/sliderImages';
 
 const features = [
   {
@@ -40,32 +41,12 @@ const HomePage = () => {
     toast.success('Redirecting to admission page...');
   };
 
-  const sliderImages = [
-    {
-      image: '',
-      description: 'A place where young minds grow and excel'
-    },
-    {
-      image: '',
-      title: 'Modern Facilities',
-      description: 'State-of-the-art infrastructure for better learning'
-    },
-    {
-      image: '',
-      title: 'Expert Faculty',
-      description: 'Learn from the best educators in the field'
-    },
-    {
-      image: '',
-      title: 'Extracurricular Activities',
-      description: 'Holistic development beyond academics'
-    }
-  ];
+  const sliderImages = SLIDER_IMAGES;
 
   return (
-    <div className="pt-24">
+    <div>
       {/* Hero Section */}
-      <section className="relative bg-gradient-to-r from-blue-600 to-indigo-700 text-white overflow-hidden">
+      <section className="relative pt-10 bg-gradient-to-r from-blue-600 to-indigo-700 text-white overflow-hidden">
         <div className="absolute inset-0 bg-grid-white/10 [mask-image:linear-gradient(to_bottom,transparent_1%,white,transparent_99%)]" />
         <div className="container mx-auto px-6 py-20 md:py-32 relative z-10">
           <div className="max-w-4xl mx-auto text-center">
@@ -168,7 +149,7 @@ const HomePage = () => {
                 <FiAward className="w-8 h-8 text-teal-600" />
               </div>
               <h3 className="text-2xl font-bold text-gray-900 mb-3">View Results</h3>
-              <p className="text-gray-600 mb-6">Check out the latest examination results, toppers list, and merit certificates.</p>
+              <p className="text-gray-600 mb-6">Check out the latest examination results, </p>
               <Link 
                 to="/results" 
                 className="inline-flex items-center justify-center px-6 py-3 bg-gradient-to-r from-teal-500 to-emerald-600 text-white font-medium rounded-lg hover:opacity-90 transition-all duration-200 shadow-md hover:shadow-lg"

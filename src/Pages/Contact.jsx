@@ -1,5 +1,6 @@
 import React from 'react';
 import ContactForm from '../components/ContactForm';
+import schoolInfo from '../hooks/useSchoolInfo';
 
 export default function Contact() {
   return (
@@ -20,11 +21,21 @@ export default function Contact() {
               <div className="space-y-4">
                 <div>
                   <h3 className="font-medium text-gray-800">Email</h3>
-                  <p className="text-gray-600">info@dinapublicschool.edu</p>
+                  <p className="text-gray-600">{schoolInfo.contact.email[0]}</p>
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-800">Phone</h3>
-                  <p className="text-gray-600">+91 6295884463</p>
+                  <p className="text-gray-600">
+                    {schoolInfo.contact.phone.length > 0 
+                      ? schoolInfo.contact.phone.join(', ')
+                      : '+91 62958 84463'}
+                  </p>
+                </div>
+                <div>
+                  <h3 className="font-medium text-gray-800">Address</h3>
+                  <p className="text-gray-600 whitespace-pre-line">
+                    {schoolInfo.address.fullAddress}
+                  </p>
                 </div>
                 <div>
                   <h3 className="font-medium text-gray-800">Office Hours</h3>
@@ -36,15 +47,16 @@ export default function Contact() {
             
             <div className="bg-white p-6 rounded-xl shadow">
               <h2 className="text-xl font-semibold mb-4">Our Location</h2>
-              <div className="aspect-w-16 aspect-h-9 rounded-lg overflow-hidden">
+              <div className="aspect-w-16 aspect-h-9 rounded-xl overflow-hidden">
                 <iframe
-                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3648.1234567890123!2d88.12345678901234!3d22.123456789012345!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjLCsDA3JzI0LjQiTiA4OMKwMDcnMjQuMCJF!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin"
+                  src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d7215.27171663533!2d88.341211!3d25.3075!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x0%3A0x0!2zMjXCsDE4JzI3LjEiTiA4OMKwMjAnNDguNiJF!5e0!3m2!1sen!2sin!4v1234567890123!5m2!1sen!2sin&z=13&ll=25.3075,88.341211&output=embed"
                   width="100%"
-                  height="250"
+                  height="100%"
                   style={{ border: 0 }}
-                  allowFullScreen=""
+                  allowFullScreen
                   loading="lazy"
-                  title="School Location on Map"
+                  referrerPolicy="no-referrer-when-downgrade"
+                  title="Dina Public School Location"
                 ></iframe>
               </div>
             </div>

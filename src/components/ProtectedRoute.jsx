@@ -1,21 +1,40 @@
-import { useEffect } from 'react';
-import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from '../hooks/useAuth.jsx';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 import { toast } from 'react-hot-toast';
+import { useEffect, useRef } from 'react';
 
-const ProtectedRoute = ({ children, requiredAdmin = false }) => {
-  const { isAuthenticated, isAdmin, loading } = useAuth();
+/**
+ * ProtectedRoute component for handling authentication and authorization
+ * @param {Object} props - Component props
+ * @param {React.ReactNode} children - Child components to render if authorized
+ * @param {boolean} [requireAdmin] - If true, requires admin privileges
+ * @param {boolean} [requireAuth] - If true, requires any authenticated user (for admission/contact)
+ * @returns {JSX.Element} Protected route component
+ */
+const ProtectedRoute = ({ 
+  children, 
+  requireAdmin = false,
+  requireAuth = false 
+}) => {
+  const { user, isAdmin, loading } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
+  const isAdminRoute = location.pathname.startsWith('/admin');
+  const loginPath = isAdminRoute ? '/admin/login' : '/login';
+  const from = location.state?.from?.pathname || location.pathname || '/';
+  const hasRedirected = useRef(false);
+  const redirectTimeout = useRef(null);
 
+  // Cleanup on unmount
   useEffect(() => {
-    if (!loading && !isAuthenticated) {
-      toast.error('Please sign in to access this page');
-    } else if (!loading && requiredAdmin && !isAdmin) {
-      toast.error('Admin privileges required');
-    }
-  }, [isAuthenticated, isAdmin, loading]);
+    return () => {
+      if (redirectTimeout.current) {
+        clearTimeout(redirectTimeout.current);
+      }
+    };
+  }, []);
 
-  // Show loading spinner while checking auth state
+  // Show loading state while checking auth
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-gray-50">
@@ -27,17 +46,46 @@ const ProtectedRoute = ({ children, requiredAdmin = false }) => {
     );
   }
 
-  // Redirect to login if not authenticated
-  if (!isAuthenticated) {
-    return <Navigate to="/login" state={{ from: location }} replace />;
+  // Check if admin access is required
+  if (requireAdmin) {
+    if (!user) {
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        return <Navigate to={loginPath} state={{ from: location }} replace />;
+      }
+      return null;
+    }
+    
+    if (!isAdmin) {
+      if (!hasRedirected.current) {
+        hasRedirected.current = true;
+        toast.error('Admin access required');
+        // Use a timeout to prevent navigation loops
+        redirectTimeout.current = setTimeout(() => {
+          navigate('/', { replace: true });
+        }, 0);
+      }
+      return null;
+    }
+    return children;
   }
 
-  // Redirect to home if admin access is required but user is not admin
-  if (requiredAdmin && !isAdmin) {
-    return <Navigate to="/" replace />;
+  // Check if any authentication is required (for public routes with auth)
+  if (requireAuth) {
+    // Allow access if user is logged in (either admin or public user)
+    if (user) {
+      return children;
+    }
+    
+    // Redirect to login if not authenticated
+    if (!hasRedirected.current) {
+      hasRedirected.current = true;
+      return <Navigate to={loginPath} state={{ from: location }} replace />;
+    }
+    return null;
   }
 
-  // If all checks pass, render the protected content
+  // If no specific auth requirements, render children
   return children;
 };
 

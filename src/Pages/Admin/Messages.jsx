@@ -1,26 +1,21 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { 
-  FiArrowLeft, 
-  FiMessageSquare, 
-  FiMail, 
-  FiPhone, 
-  FiClock, 
-  FiEye, 
-  FiTrash2,
-  FiSearch,
-  FiFilter
+  FiArrowLeft, FiMessageSquare, FiMail, FiPhone, 
+  FiClock, FiEye, FiEyeOff, FiTrash2, FiSearch,
+  FiFilter, FiRefreshCw
 } from 'react-icons/fi';
-import { collection, query, orderBy, getDocs, doc, updateDoc, deleteDoc, onSnapshot } from 'firebase/firestore';
-import { db } from '../../firebase';
 import { toast } from 'react-hot-toast';
+import { useMessageStore } from '../../store/useMessageStore';
+import { useUpdateMessageStatus, useDeleteMessage } from '../../hooks/useMessageMutations';
 
 const Messages = () => {
   const navigate = useNavigate();
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
+  const { messages, isLoading, error, subscribeToMessages } = useMessageStore();
+  const updateStatus = useUpdateMessageStatus();
+  const deleteMessage = useDeleteMessage();
 
   // Format date to relative time (e.g., "2 hours ago")
   const formatRelativeTime = (date) => {
@@ -60,152 +55,42 @@ const Messages = () => {
     };
   };
 
-  // Set up real-time listener for messages
-  useEffect(() => {
-    console.log('Setting up messages listener...');
-    
-    const q = query(
-      collection(db, 'messages'),
-      orderBy('createdAt', 'desc')
-    );
-    
-    const unsubscribe = onSnapshot(
-      q,
-      (querySnapshot) => {
-        console.log('Messages updated, new count:', querySnapshot.size);
-        if (querySnapshot.empty) {
-          console.log('No messages found in the collection');
-          setMessages([]);
-          setLoading(false);
-          return;
-        }
-        
-        const messagesData = [];
-        querySnapshot.forEach((doc) => {
-          try {
-            const processed = processMessageDoc(doc);
-            messagesData.push(processed);
-          } catch (error) {
-            console.error('Error processing document:', doc.id, error);
-          }
-        });
-        
-        console.log('Processed messages:', messagesData);
-        setMessages(messagesData);
-        setLoading(false);
-      },
-      (error) => {
-        console.error('Error in messages listener:', error);
-        console.error('Error details:', {
-          code: error.code,
-          message: error.message,
-          stack: error.stack
-        });
-        toast.error(`Error loading messages: ${error.message}`);
-        setLoading(false);
-      }
-    );
-    
-    // Initial fetch as fallback
-    fetchMessages();
-    
-    // Clean up listener on unmount
-    return () => {
-      console.log('Cleaning up messages listener');
-      unsubscribe();
-    };
-  }, []);
-  
-  // Initial data fetch (fallback in case real-time fails)
-  const fetchMessages = async () => {
-    try {
-      setLoading(true);
-      console.log('Fetching messages...');
-      
-      const messagesRef = collection(db, 'messages');
-      console.log('Messages reference created');
-      
-      const q = query(messagesRef, orderBy('createdAt', 'desc'));
-      console.log('Query created');
-      
-      const querySnapshot = await getDocs(q);
-      console.log('Query executed, found', querySnapshot.docs.length, 'messages');
-      
-      if (querySnapshot.empty) {
-        console.log('No messages found in initial fetch');
-        setMessages([]);
-        return;
-      }
-      
-      const messagesData = [];
-      querySnapshot.forEach(doc => {
-        try {
-          const processed = processMessageDoc(doc);
-          messagesData.push(processed);
-        } catch (error) {
-          console.error(`Error processing document ${doc.id}:`, error);
-        }
-      });
-      
-      console.log('Successfully processed messages:', messagesData);
-      setMessages(messagesData);
-    } catch (error) {
-      console.error('Error in initial messages fetch:', {
-        name: error.name,
-        message: error.message,
-        code: error.code,
-        stack: error.stack
-      });
-      toast.error(`Failed to load messages: ${error.message}`);
-    } finally {
-      setLoading(false);
-    }
+  // Handle status toggle
+  const handleToggleStatus = (messageId, currentStatus) => {
+    updateStatus.mutate({
+      messageId,
+      status: currentStatus === 'read' ? 'unread' : 'read'
+    });
   };
 
-  // Mark message as read/unread
-  const toggleMessageStatus = async (messageId, currentStatus) => {
-    try {
-      await updateDoc(doc(db, 'messages', messageId), {
-        status: currentStatus === 'read' ? 'unread' : 'read',
-        updatedAt: new Date()
-      });
-      fetchMessages(); // Refresh the list
-    } catch (error) {
-      console.error('Error updating message status:', error);
-      toast.error('Failed to update message status');
-    }
-  };
-
-  // Delete a message
-  const handleDeleteMessage = async (messageId) => {
+  // Handle message deletion
+  const handleDeleteMessage = (messageId) => {
     if (window.confirm('Are you sure you want to delete this message?')) {
-      try {
-        await deleteDoc(doc(db, 'messages', messageId));
-        toast.success('Message deleted successfully');
-        fetchMessages(); // Refresh the list
-      } catch (error) {
-        console.error('Error deleting message:', error);
-        toast.error('Failed to delete message');
-      }
+      deleteMessage.mutate(messageId);
     }
   };
 
-  // Filter messages based on search and status
-  const filteredMessages = messages.filter(message => {
-    const matchesSearch = 
-      message.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      message.message?.toLowerCase().includes(searchTerm.toLowerCase());
+  // Memoized filtered messages
+  const filteredMessages = useMemo(() => {
+    if (!messages) return [];
     
-    const matchesStatus = statusFilter === 'all' || message.status === statusFilter;
+    return messages.filter(message => {
+      const matchesSearch = 
+        message.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        message.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        message.message?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesStatus = statusFilter === 'all' || message.status === statusFilter;
     
-    return matchesSearch && matchesStatus;
-  });
+      return matchesSearch && matchesStatus;
+    });
+  }, [messages, searchTerm, statusFilter]);
 
   // Load messages on component mount
   useEffect(() => {
-    fetchMessages();
-  }, []);
+    const unsubscribe = subscribeToMessages();
+    return () => unsubscribe && unsubscribe();
+  }, [subscribeToMessages]);
 
   return (
     <div className="p-4 md:p-6">
@@ -255,11 +140,7 @@ const Messages = () => {
 
         {/* Messages list */}
         <div className="divide-y divide-gray-200">
-          {loading ? (
-            <div className="p-8 text-center text-gray-500">
-              <p>Loading messages...</p>
-            </div>
-          ) : filteredMessages.length === 0 ? (
+          {filteredMessages.length === 0 ? (
             <div className="p-8 text-center text-gray-500">
               <FiMessageSquare className="mx-auto h-12 w-12 text-gray-300" />
               <h3 className="mt-2 text-sm font-medium text-gray-900">No messages</h3>
@@ -309,11 +190,16 @@ const Messages = () => {
                         </div>
                         <div className="mt-2 flex space-x-2">
                           <button
-                            onClick={() => toggleMessageStatus(message.id, message.status)}
+                            onClick={() => handleToggleStatus(message.id, message.status)}
                             className="text-gray-400 hover:text-gray-600"
                             title={message.status === 'read' ? 'Mark as unread' : 'Mark as read'}
                           >
-                            <FiEye className="h-4 w-4" />
+                            {message.status === 'read' ? (
+                              <FiEyeOff className="w-4 h-4 mr-1" />
+                            ) : (
+                              <FiEye className="w-4 h-4 mr-1" />
+                            )}
+                            {message.status === 'read' ? 'Mark as Unread' : 'Mark as Read'}
                           </button>
                           <a 
                             href={`mailto:${message.email}`} 

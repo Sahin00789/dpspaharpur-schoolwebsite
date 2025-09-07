@@ -1,433 +1,327 @@
-import { useEffect, useState } from 'react';
-import { useNavigate, useLocation, Routes, Route, Link } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { 
-  FiLogOut, FiBell, FiHome, FiUsers, FiMessageSquare, 
-  FiMenu, FiX, FiChevronRight, FiChevronLeft, 
-  FiMail, FiUser, FiSettings, FiCalendar, FiPlus,
-  FiArrowRight, FiAlertCircle
+  FiHome, FiBell, FiUsers, FiMessageSquare, 
+  FiClock, FiArrowRight, FiFileText
 } from 'react-icons/fi';
-import { toast } from 'react-hot-toast';
-import { db } from '../../firebase';
-import { 
-  collection, getDocs, query, where, 
-  orderBy, limit, onSnapshot 
-} from 'firebase/firestore';
-import NoticesManager from './NoticesManager';
-import { useAuth } from '../../hooks/useAuth';
+import { useDashboardStats } from '../../hooks/useDashboardStats';
+import { useNoticeStore } from '../../store/useNoticeStore';
+import { useMessageStore } from '../../store/useMessageStore';
+import { useEffect, useState, useCallback } from 'react';
+import { auth } from '../../firebase';
+import { motion } from 'framer-motion';
+import useAdmissionStore from '../../store/useAdmissionStore';
 
-const AdminDashboard = () => {
-  const { user, signOut } = useAuth();
-  const navigate = useNavigate();
-  const location = useLocation();
-  
-  // State management
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
-  const [recentNotices, setRecentNotices] = useState([]);
-  const [isLoadingNotices, setIsLoadingNotices] = useState(true);
-  const [stats, setStats] = useState({
-    activeNotices: { name: 'Active Notices', value: '0', icon: FiBell },
-    unreadMessages: { name: 'Unread Messages', value: '0', icon: FiMail },
+const Dashboard = () => {
+  const [isLoading, setIsLoading] = useState(true);
+  const { notices: recentNotices = [], subscribeToNotices } = useNoticeStore();
+  const { fetchApplications } = useAdmissionStore();
+  const { unreadMessages = 0, activeNotices = 0 } = useDashboardStats();
+  const [admissionStats, setAdmissionStats] = useState({
+    total: 0,
+    pending: 0,
+    approved: 0,
+    rejected: 0
   });
-
-  // Toggle sidebar
-  const toggleSidebar = () => {
-    const newState = !isSidebarOpen;
-    setIsSidebarOpen(newState);
-    localStorage.setItem('sidebarCollapsed', !newState);
+  
+  // Simulate loading state
+  useEffect(() => {
+    const timer = setTimeout(() => setIsLoading(false), 800);
+    return () => clearTimeout(timer);
+  }, []);
+  
+  // Format date to relative time
+  const formatDate = (date) => {
+    if (!date) return 'N/A';
+    try {
+      const now = new Date();
+      const noticeDate = typeof date === 'object' ? date : new Date(date);
+      const diffInDays = Math.floor((now - noticeDate) / (1000 * 60 * 60 * 24));
+      
+      if (diffInDays === 0) return 'Today';
+      if (diffInDays === 1) return 'Yesterday';
+      if (diffInDays < 7) return `${diffInDays} days ago`;
+      return noticeDate.toLocaleDateString();
+    } catch (e) {
+      console.error('Error formatting date:', e);
+      return 'N/A';
+    }
   };
 
-  // Load sidebar preference
-  useEffect(() => {
-    const savedPreference = localStorage.getItem('sidebarCollapsed');
-    if (savedPreference !== null) {
-      setIsSidebarOpen(savedPreference === 'false');
-    }
-  }, []);
+  // Stats with real-time data
+  const stats = [
+    { 
+      name: 'Active Notices', 
+      value: activeNotices, 
+      icon: FiBell,
+      color: 'from-blue-500 to-blue-600',
+      path: '/admin/notices',
+      description: 'Total active notices displayed',
+      trend: activeNotices > 0 ? 'up' : 'down'
+    },
+    { 
+      name: 'Unread Messages', 
+      value: unreadMessages, 
+      icon: FiMessageSquare,
+      color: 'from-green-500 to-green-600',
+      path: '/admin/messages',
+      description: 'Require your attention',
+      trend: unreadMessages > 0 ? 'up' : 'same'
+    },
+    { 
+      name: 'Admissions', 
+      value: admissionStats.total,
+      icon: FiUsers,
+      color: 'from-purple-500 to-purple-600',
+      path: '/admin/admissions',
+      description: `${admissionStats.pending} pending, ${admissionStats.approved} approved`,
+      trend: admissionStats.pending > 0 ? 'up' : 'same'
+    },
+  ];
+  
+  // Filter out notices without a title for display
+  const validNotices = Array.isArray(recentNotices) 
+    ? recentNotices.filter(notice => notice?.title)
+    : [];
 
-  // Close mobile menu when clicking outside
-  useEffect(() => {
-    const handleClickOutside = (event) => {
-      const sidebar = document.querySelector('.sidebar');
-      if (sidebar && !sidebar.contains(event.target) && isMobileMenuOpen) {
-        setIsMobileMenuOpen(false);
+  // Fetch admission statistics
+  const fetchAdmissionStats = useCallback(async () => {
+    try {
+      const { currentUser } = auth;
+      if (!currentUser) {
+        console.log('No user found, forcing token refresh...');
+        await currentUser.getIdToken(true); // Force token refresh
       }
-    };
-
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [isMobileMenuOpen]);
-
-  // Fetch stats
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const messagesRef = collection(db, 'messages');
-        const messagesQuery = query(messagesRef, where('status', '==', 'unread'));
-        const messagesSnapshot = await getDocs(messagesQuery);
-        
-        setStats(prev => ({
-          ...prev,
-          unreadMessages: { 
-            ...prev.unreadMessages, 
-            value: messagesSnapshot.size.toString() 
-          }
-        }));
-      } catch (error) {
-        console.error('Error fetching stats:', error);
-        toast.error('Failed to load dashboard stats');
-      }
-    };
-
-    fetchStats();
-  }, []);
-
-  // Real-time listener for unread messages
-  useEffect(() => {
-    const messagesRef = collection(db, 'messages');
-    const q = query(messagesRef, where('status', '==', 'unread'));
-    
-    const unsubscribe = onSnapshot(q, (snapshot) => {
-      setStats(prev => ({
-        ...prev,
-        unreadMessages: { 
-          ...prev.unreadMessages, 
-          value: snapshot.size.toString() 
-        }
-      }));
-    });
-    
-    return () => unsubscribe();
-  }, []);
-
-  // Fetch recent notices with retry logic
-  useEffect(() => {
-    let isMounted = true;
-    const MAX_RETRIES = 3;
-    let retryCount = 0;
-    let retryTimeout;
-
-    const fetchRecentNotices = async () => {
-      try {
-        setIsLoadingNotices(true);
-        const noticesRef = collection(db, 'notices');
-        let querySnapshot;
-        
+      
+      const applications = await fetchApplications();
+      const stats = {
+        total: applications?.length || 0,
+        pending: applications?.filter(app => app.status === 'pending')?.length || 0,
+        approved: applications?.filter(app => app.status === 'approved')?.length || 0,
+        rejected: applications?.filter(app => app.status === 'rejected')?.length || 0
+      };
+      setAdmissionStats(stats);
+    } catch (error) {
+      console.error('Error fetching admission stats:', error);
+      // If there's an auth error, try to refresh the token
+      if (error.code === 'permission-denied' || error.code === 'unauthenticated') {
         try {
-          // First try with createdAt field
-          const q = query(
-            noticesRef,
-            where('isActive', '==', true),
-            orderBy('createdAt', 'desc'),
-            limit(5)
-          );
-          querySnapshot = await getDocs(q);
-        } catch (error) {
-          console.log('Trying with date field:', error);
-          // If createdAt fails, try with date field
-          const q = query(
-            noticesRef,
-            where('isActive', '==', true),
-            orderBy('date', 'desc'),
-            limit(5)
-          );
-          querySnapshot = await getDocs(q);
-        }
-        
-        if (!isMounted) return;
-        
-        const processNoticeDoc = (doc) => {
-          const data = doc.data();
-          const getDate = (timestamp) => {
-            try {
-              return timestamp?.toDate ? timestamp.toDate() : new Date();
-            } catch (error) {
-              console.warn('Error parsing timestamp:', error);
-              return new Date();
-            }
+          await auth.currentUser?.getIdToken(true);
+          // Retry after token refresh
+          const retryApps = await fetchApplications();
+          const retryStats = {
+            total: retryApps?.length || 0,
+            pending: retryApps?.filter(app => app.status === 'pending')?.length || 0,
+            approved: retryApps?.filter(app => app.status === 'approved')?.length || 0,
+            rejected: retryApps?.filter(app => app.status === 'rejected')?.length || 0
           };
-          
-          return {
-            id: doc.id,
-            title: data.title || 'Untitled Notice',
-            content: data.content || '',
-            isActive: data.isActive || false,
-            createdAt: getDate(data.createdAt || data.date),
-            updatedAt: getDate(data.updatedAt || data.date || data.createdAt)
-          };
-        };
-        
-        const noticesData = querySnapshot.docs.map(processNoticeDoc);
-        
-        if (isMounted) {
-          setRecentNotices(noticesData);
-          setStats(prev => ({
-            ...prev,
-            activeNotices: { 
-              ...prev.activeNotices, 
-              value: noticesData.length.toString() 
-            }
-          }));
+          setAdmissionStats(retryStats);
+        } catch (retryError) {
+          console.error('Retry failed:', retryError);
         }
-        
+      }
+    }
+  }, [fetchApplications]);
+
+  // Subscribe to real-time updates
+  useEffect(() => {
+    const unsubscribeMessages = useMessageStore.getState().subscribeToMessages();
+    
+    // Subscribe to notices
+    const unsubscribeNotices = subscribeToNotices(5);
+    
+    // Initial data fetch
+    const loadData = async () => {
+      try {
+        await Promise.all([
+          fetchAdmissionStats()
+        ]);
       } catch (error) {
-        console.error('Error fetching notices:', error);
-        
-        if (retryCount < MAX_RETRIES) {
-          retryCount++;
-          console.log(`Retrying... (${retryCount}/${MAX_RETRIES})`);
-          retryTimeout = setTimeout(fetchRecentNotices, 1000 * Math.pow(2, retryCount));
-        } else if (isMounted) {
-          toast.error('Failed to load notices');
-          setRecentNotices([]);
-        }
+        console.error('Error loading dashboard data:', error);
       } finally {
-        if (isMounted) {
-          setIsLoadingNotices(false);
-        }
+        setIsLoading(false);
       }
     };
     
-    fetchRecentNotices();
+    loadData();
     
     return () => {
-      isMounted = false;
-      if (retryTimeout) clearTimeout(retryTimeout);
+      if (unsubscribeMessages) unsubscribeMessages();
+      if (unsubscribeNotices) unsubscribeNotices();
     };
-  }, []);
+  }, [subscribeToNotices, fetchAdmissionStats]);
 
-  const navigation = [
-    { name: 'Dashboard', href: '/admin', icon: FiHome },
-    { name: 'Messages', href: '/admin/messages', icon: FiMessageSquare, count: stats.unreadMessages.value },
-    { name: 'Notices', href: '/admin/notices', icon: FiBell },
-    { name: 'Users', href: '/admin/users', icon: FiUsers },
-    { name: 'Settings', href: '/admin/settings', icon: FiSettings },
-  ];
 
-  const handleLogout = async () => {
-    try {
-      await signOut();
-      navigate('/login');
-    } catch (error) {
-      console.error('Logout error:', error);
-      toast.error('Failed to log out');
+  // Animation variants
+  const container = {
+    hidden: { opacity: 0 },
+    show: {
+      opacity: 1,
+      transition: {
+        staggerChildren: 0.1
+      }
     }
   };
 
-  return (
-    <div className="min-h-screen bg-gray-100 flex flex-col">
-      {/* Mobile menu button */}
-      <div className="md:hidden fixed top-4 right-4 z-50">
-        <button
-          onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-          className="p-2 rounded-md text-gray-700 hover:bg-gray-100"
-        >
-          {isMobileMenuOpen ? <FiX size={24} /> : <FiMenu size={24} />}
-        </button>
-      </div>
+  const item = {
+    hidden: { opacity: 0, y: 20 },
+    show: { opacity: 1, y: 0, transition: { duration: 0.4 } }
+  };
 
-      <div className="flex-1 flex">
-        {/* Desktop Sidebar */}
-        <div className={`hidden md:flex flex-col bg-white border-r border-gray-200 ${
-          isSidebarOpen ? 'w-64' : 'w-20'
-        } transition-all duration-200`}>
-          <div className="flex-1 flex flex-col pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center px-4">
-              {isSidebarOpen && <h1 className="text-xl font-semibold">Admin</h1>}
-              <button
-                onClick={toggleSidebar}
-                className="ml-auto p-1 text-gray-400 hover:text-gray-500"
-              >
-                {isSidebarOpen ? <FiChevronLeft size={20} /> : <FiChevronRight size={20} />}
-              </button>
-            </div>
-            <nav className="mt-5 flex-1 px-2 space-y-1">
-              {navigation.map((item) => (
-                <Link
-                  key={item.name}
-                  to={item.href}
-                  className={`flex items-center px-2 py-2 text-sm font-medium rounded-md ${
-                    location.pathname === item.href
-                      ? 'bg-indigo-50 text-indigo-700'
-                      : 'text-gray-700 hover:bg-gray-50'
-                  }`}
-                >
-                  <item.icon className="mr-3 h-5 w-5" />
-                  {isSidebarOpen && item.name}
-                  {isSidebarOpen && item.count && (
-                    <span className="ml-auto bg-indigo-100 text-indigo-800 text-xs px-2 py-0.5 rounded-full">
-                      {item.count}
-                    </span>
-                  )}
-                </Link>
-              ))}
-            </nav>
-          </div>
-          <div className="p-4 border-t border-gray-200">
-            <button
-              onClick={handleLogout}
-              className="w-full flex items-center text-gray-700 hover:text-gray-900"
-            >
-              <FiLogOut className="mr-3 h-5 w-5" />
-              {isSidebarOpen && 'Sign out'}
-            </button>
-          </div>
+  if (isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="h-12 w-12 bg-indigo-100 rounded-full mb-4"></div>
+          <div className="h-4 bg-gray-200 rounded w-32"></div>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="h-full flex flex-col bg-gray-50">
+      <div className="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-8 flex-1">
+        {/* Back to Home Button */}
+        <Link 
+          to="/" 
+          className="inline-flex items-center mb-6 text-sm font-medium text-indigo-600 hover:text-indigo-800 transition-colors duration-200"
+        >
+          <svg className="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+          </svg>
+          Back to Home
+        </Link>
+        <div className="mb-8 bg-white p-6 rounded-xl shadow-sm border border-gray-200">
+          <h1 className="text-2xl font-bold text-gray-900">Dashboard Overview</h1>
+          <p className="mt-1 text-sm text-gray-500">Welcome back! Here's what's happening with your school.</p>
         </div>
 
-        {/* Main content */}
-        <main className="flex-1 overflow-y-auto bg-gray-100">
-          <div className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-            <Routes>
-              <Route
-                index
-                element={
-                  <div className="space-y-8">
-                    {/* Welcome Header */}
-                    <div className="bg-white rounded-lg shadow-sm p-6 mb-6">
-                      <div className="flex justify-between items-start">
-                        <div>
-                          <h1 className="text-2xl font-bold text-gray-900">
-                            Welcome back, {user?.displayName || 'Admin'}!
-                          </h1>
-                          <p className="mt-1 text-sm text-gray-500">
-                            Here's what's happening with your school today.
-                          </p>
-                        </div>
-                      </div>
+        {/* Stats Grid */}
+        <motion.div 
+          variants={container}
+          initial="hidden"
+          animate="show"
+          className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 mb-8"
+        >
+          {stats.map((stat) => (
+            <motion.div key={stat.name} variants={item}>
+              <Link
+                to={stat.path}
+                className="block bg-white rounded-xl shadow-sm hover:shadow-md transition-shadow duration-300 overflow-hidden border border-gray-100"
+              >
+                <div className="p-6">
+                  <div className="flex items-center justify-between">
+                    <div className={`p-3 rounded-lg bg-gradient-to-r ${stat.color} shadow-md`}>
+                      <stat.icon className="w-6 h-6 text-white" />
                     </div>
-
-                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-                      {/* Quick Stats */}
-                      <div className="lg:col-span-2 space-y-6">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                          {Object.entries(stats).map(([key, stat]) => (
-                            <div
-                              key={key}
-                              className="bg-white rounded-lg shadow-sm p-6 hover:shadow-md transition-shadow"
-                            >
-                              <div className="flex items-center">
-                                <div className="p-3 rounded-full bg-indigo-100 text-indigo-600">
-                                  <stat.icon className="h-6 w-6" />
-                                </div>
-                                <div className="ml-4">
-                                  <p className="text-sm font-medium text-gray-500">
-                                    {stat.name}
-                                  </p>
-                                  <p className="text-2xl font-semibold text-gray-900">
-                                    {stat.value}
-                                  </p>
-                                </div>
-                              </div>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Recent Notices */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                          <div className="flex items-center justify-between mb-6">
-                            <h2 className="text-lg font-semibold text-gray-900">
-                              Recent Notices
-                            </h2>
-                            <button
-                              onClick={() => navigate('/admin/notices')}
-                              className="text-sm font-medium text-indigo-600 hover:text-indigo-500"
-                            >
-                              View all
-                            </button>
-                          </div>
-                          {isLoadingNotices ? (
-                            <div className="flex justify-center py-8">
-                              <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-indigo-600"></div>
-                            </div>
-                          ) : recentNotices.length > 0 ? (
-                            <div className="space-y-4">
-                              {recentNotices.map((notice) => (
-                                <div
-                                  key={notice.id}
-                                  className="border-b border-gray-100 pb-4 last:border-0 last:pb-0"
-                                >
-                                  <div className="flex justify-between">
-                                    <h3 className="font-medium text-gray-900">
-                                      {notice.title}
-                                    </h3>
-                                    <span className="text-xs text-gray-500">
-                                      {notice.createdAt.toLocaleDateString()}
-                                    </span>
-                                  </div>
-                                  <p className="mt-1 text-sm text-gray-500 line-clamp-2">
-                                    {notice.content}
-                                  </p>
-                                </div>
-                              ))}
-                            </div>
-                          ) : (
-                            <div className="text-center py-8 text-gray-500">
-                              No active notices found.
-                            </div>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Quick Actions */}
-                      <div className="space-y-6">
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                          <h2 className="text-lg font-semibold text-gray-900 mb-6">
-                            Quick Actions
-                          </h2>
-                          <div className="space-y-3">
-                            <button
-                              onClick={() => navigate('/admin/notices/new')}
-                              className="w-full flex items-center justify-between p-3 rounded-md border border-gray-200 hover:bg-gray-50"
-                            >
-                              <div className="flex items-center">
-                                <div className="p-2 rounded-full bg-indigo-100 text-indigo-600">
-                                  <FiPlus className="h-4 w-4" />
-                                </div>
-                                <span className="ml-3 text-sm font-medium text-gray-700">
-                                  Add New Notice
-                                </span>
-                              </div>
-                              <FiArrowRight className="h-4 w-4 text-gray-400" />
-                            </button>
-                          </div>
-                        </div>
-
-                        {/* System Status */}
-                        <div className="bg-white rounded-lg shadow-sm p-6">
-                          <h2 className="text-lg font-semibold text-gray-900 mb-4">
-                            System Status
-                          </h2>
-                          <div className="space-y-4">
-                            <div className="flex items-center">
-                              <div className="p-1 rounded-full bg-green-100">
-                                <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                              </div>
-                              <span className="ml-3 text-sm font-medium text-gray-700">
-                                All systems operational
-                              </span>
-                            </div>
-                            <div className="flex items-center">
-                              <div className="p-1 rounded-full bg-green-100">
-                                <div className="h-2 w-2 rounded-full bg-green-500"></div>
-                              </div>
-                              <span className="ml-3 text-sm font-medium text-gray-700">
-                                Database connection active
-                              </span>
-                            </div>
-                          </div>
-                        </div>
-                      </div>
+                    <div className="text-right">
+                      <p className="text-sm font-medium text-gray-600">{stat.name}</p>
+                      <p className="mt-1 text-2xl font-semibold text-gray-900">
+                        {stat.value}
+                      </p>
                     </div>
                   </div>
-                }
-              />
-              <Route path="notices/*" element={<NoticesManager />} />
-            </Routes>
+                  <div className="mt-4">
+                    <p className="text-xs text-gray-500">{stat.description}</p>
+                  </div>
+                </div>
+              </Link>
+            </motion.div>
+          ))}
+        </motion.div>
+
+        {/* Recent Notices Section */}
+        <motion.div 
+          variants={item}
+          className="bg-white rounded-xl shadow-sm overflow-hidden border border-gray-100"
+        >
+          <div className="px-6 py-5 border-b border-gray-100">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-semibold text-gray-900">
+                  Recent Notices
+                </h3>
+                <p className="mt-1 text-sm text-gray-500">
+                  Latest announcements and updates
+                </p>
+              </div>
+              <Link
+                to="/admin/notices"
+                className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 transition-colors duration-200"
+              >
+                View All
+              </Link>
+            </div>
           </div>
-        </main>
+          
+          <div className="divide-y divide-gray-100">
+            {!Array.isArray(validNotices) || validNotices.length === 0 ? (
+              <div className="p-6 text-center">
+                <div className="text-gray-400 mb-2">
+                  <FiFileText className="mx-auto h-12 w-12 opacity-50" />
+                </div>
+                <h4 className="text-sm font-medium text-gray-900">No notices yet</h4>
+                <p className="mt-1 text-sm text-gray-500">Create your first notice to get started</p>
+                <div className="mt-4">
+                  <Link
+                    to="/admin/notices"
+                    className="inline-flex items-center px-3 py-1.5 border border-transparent text-xs font-medium rounded-full shadow-sm text-white bg-indigo-600 hover:bg-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500"
+                  >
+                    Create Notice
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              validNotices.slice(0, 5).map((notice) => (
+                <Link
+                  key={notice.id}
+                  to={`/admin/notices`}
+                  className="block hover:bg-gray-50 transition-colors duration-150"
+                >
+                  <div className="px-6 py-4">
+                    <div className="flex items-start">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm font-medium text-indigo-600 truncate">
+                            {notice.title}
+                          </p>
+                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-indigo-100 text-indigo-800 ml-2">
+                            {notice.category || 'General'}
+                          </span>
+                        </div>
+                        <p className="mt-1 text-sm text-gray-600 line-clamp-2">
+                          {notice.description?.substring(0, 120)}{notice.description?.length > 120 ? '...' : ''}
+                        </p>
+                        <div className="mt-2 flex items-center text-xs text-gray-500">
+                          <FiClock className="flex-shrink-0 mr-1.5 h-3.5 w-3.5 text-gray-400" />
+                          <span>{formatDate(notice.createdAt)}</span>
+                        </div>
+                      </div>
+                      <FiArrowRight className="ml-4 h-5 w-5 text-gray-400 group-hover:text-gray-700" />
+                    </div>
+                  </div>
+                </Link>
+              ))
+            )}
+          </div>
+        </motion.div>
+       
+      </div>
+      
+      <div className="bg-white border-t border-gray-200">
+        <div className="max-w-7xl mx-auto py-4 px-4 sm:px-6 lg:px-8">
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between">
+            <p className="text-sm text-gray-500">
+              &copy; {new Date().getFullYear()} DPS Paharpur. All rights reserved.
+            </p>
+            <p className="text-xs text-gray-500 mt-2 md:mt-0">
+              Last updated: {new Date().toLocaleDateString()}
+            </p>
+          </div>
+        </div>
       </div>
     </div>
   );
 };
 
-export default AdminDashboard;
+export default Dashboard;
