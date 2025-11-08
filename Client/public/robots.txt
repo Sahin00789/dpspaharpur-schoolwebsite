@@ -1,0 +1,28 @@
+# Allow all search engines to crawl the website
+User-agent: *
+Allow: /
+
+# Sitemap location
+Sitemap: https://dpspaharpur.web.app/sitemap.xml
+
+# Disallow admin and API routes
+Disallow: /admin/
+Disallow: /api/
+Disallow: /private/
+Disallow: /account/
+
+# Allow media files
+Allow: /*.css$
+Allow: /*.js$
+Allow: /*.png$
+Allow: /*.jpg$
+Allow: /*.jpeg$
+Allow: /*.gif$
+Allow: /*.svg$
+Allow: /*.webp$
+
+# Crawl-delay parameter to prevent server overload
+Crawl-delay: 10
+
+# Host directive - specify your preferred domain
+Host: dpspaharpur.web.app
