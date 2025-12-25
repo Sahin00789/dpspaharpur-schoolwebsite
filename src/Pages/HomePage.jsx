@@ -87,14 +87,48 @@ const hostelFacilities = [
     title: 'Full-Time Hostel',
     titleBn: 'পূর্ণকালীন হোস্টেল',
     description: 'Comfortable and secure accommodation with 24/7 supervision, study areas, recreational facilities, and comprehensive coaching programs with nutritious meals included for overall development.',
-    descriptionBn: '২৪/৭ তত্ত্বাবধান, পড়াশোনার জায়গা, বিনোদনমূলক সুবিধাসহ আরামদায়ক এবং নিরাপদ আবাসন, এবং সামগ্রিক বিকাশের জন্য পুষ্টিকর খাবারসহ ব্যাপক কোচিং প্রোগ্রাম।'
+    descriptionBn: '২৪/৭ তত্ত্বাবধান, পড়াশোনার জায়গা, বিনোদনমূলক সুবিধাসহ আরামদায়ক এবং নিরাপদ আবাসন, এবং সামগ্রিক বিকাশের জন্য পুষ্টিকর খাবারসহ ব্যাপক কোচিং প্রোগ্রাম।',
+    image: 'https://res.cloudinary.com/dhhzoshz7/image/upload/v1762442837/hostel-dpspaharpur_ekpoxs.jpg',
+    features: [
+      '24/7 Security & Supervision',
+      'Spacious Dormitories',
+      'Nutritious Meals',
+      'Evening Study Hours',
+      'Weekend Activities',
+      'Laundry Service'
+    ],
+    featuresBn: [
+      '২৪/৭ নিরাপত্তা ও তত্ত্বাবধান',
+      'প্রশস্ত ডরমিটরি',
+      'পুষ্টিকর খাবার',
+      'সান্ধ্যকালীন পড়াশোনার সময়',
+      'সাপ্তাহিক কার্যক্রম',
+      'কাপড় ধোয়ার সুবিধা'
+    ]
   },
   {
     icon: <FiClock className="w-8 h-8 text-emerald-600" />,
     title: 'Day Hostel',
     titleBn: 'ডে হোস্টেল',
     description: 'Perfect for day scholars with coaching classes, meals, and study support until evening.',
-    descriptionBn: 'সন্ধ্যা পর্যন্ত কোচিং ক্লাস, খাবার এবং পড়াশোনার সহায়তাসহ দিবা ছাত্রছাত্রীদের জন্য আদর্শ।'
+    descriptionBn: 'সন্ধ্যা পর্যন্ত কোচিং ক্লাস, খাবার এবং পড়াশোনার সহায়তাসহ দিবা ছাত্রছাত্রীদের জন্য আদর্শ।',
+    image: 'https://res.cloudinary.com/dhhzoshz7/image/upload/v1762442837/hostel-dpspaharpur_ekpoxs.jpg',
+    features: [
+      'Daily Coaching Classes',
+      'Lunch & Snacks',
+      'Evening Study Support',
+      'Library Access',
+      'Supervised Study Hours',
+      'Safe & Secure Environment'
+    ],
+    featuresBn: [
+      'নিয়মিত কোচিং ক্লাস',
+      'দুপুরের খাবার ও স্ন্যাক্স',
+      'সান্ধ্যকালীন পড়াশোনার সহায়তা',
+      'গ্রন্থাগার সুবিধা',
+      'তত্ত্বাবধানে পড়াশোনার সময়',
+      'নিরাপদ ও সুরক্ষিত পরিবেশ'
+    ]
   }
 ];
 
@@ -116,14 +150,15 @@ const translations = {
       results_btn: 'View Result Portal'
     },
     founder: {
-      title: 'Message from Our Founder',
+      title: 'Founder\'s Vision',
       name: 'Moulana Sajjad Hossain Kasimi',
       position: 'Founder & Chairman',
-      quote: "Education is not just about acquiring knowledge; it's about building character, nurturing values, and empowering the next generation to create a better tomorrow.",
+      quote: "Education is not just about acquiring knowledge; it's about building character, nurturing values, and empowering the next generation to create a better tomorrow. At DPS, we believe in shaping not just students, but responsible global citizens who will lead with wisdom and compassion.",
+      vision: "To create an enlightened society through quality education that combines modern knowledge with moral values and social responsibility."
     },
     about: {
-      title: 'Our Story',
-      content: 'Established in 2008, DPS was founded on the principles of academic excellence, moral integrity, and social responsibility.'
+      title: 'Our Journey',
+      content: 'Since our establishment in 2008, Dina Public School has been a beacon of educational excellence in the region. Founded on the principles of academic rigor, moral integrity, and social responsibility, we have grown from humble beginnings to become a trusted name in quality education. Our commitment to holistic development and innovative teaching methodologies has consistently produced outstanding results, while our focus on character building has shaped generations of responsible citizens.'
     },
     academics: {
       title: 'Academic Excellence',
@@ -168,14 +203,15 @@ const translations = {
       results_btn: 'ফলাফল পোর্টাল দেখুন'
     },
     founder: {
-      title: 'প্রতিষ্ঠাতার বাণী',
+      title: 'প্রতিষ্ঠাতার দৃষ্টিভঙ্গি',
       name: 'মাওলানা সাজ্জাদ হোসাইন কাসেমী',
       position: 'প্রতিষ্ঠাতা ও সভাপতি',
-      quote: "শিক্ষা শুধু জ্ঞান অর্জন নয়; এটি চরিত্র গঠন, মূল্যবোধ লালন এবং পরবর্তী প্রজন্মকে একটি উন্নত আগামী গড়ার জন্য ক্ষমতায়ন করার বিষয়ে।",
+      quote: "শিক্ষা শুধু জ্ঞান অর্জনের বিষয় নয়; এটি চরিত্র গঠন, মূল্যবোধ লালন এবং আগামী প্রজন্মকে একটি উন্নত ভবিষ্যৎ গড়ার জন্য সক্ষম করার বিষয়। ডিপিএস-এ আমরা শুধু শিক্ষার্থী নয়, দায়িত্বশীল বিশ্ব নাগরিক গড়ে তোলার বিশ্বাস করি যারা প্রজ্ঞা ও মানবিকতায় নেতৃত্ব দেবে।",
+      vision: "আধুনিক জ্ঞানকে নৈতিক মূল্যবোধ ও সামাজিক দায়িত্বের সাথে সমন্বয় করে একটি আলোকিত সমাজ গড়ে তোলাই আমাদের লক্ষ্য।"
     },
     about: {
-      title: 'আমাদের গল্প',
-      content: '২০০৮ সালে প্রতিষ্ঠিত, ডিপিএস শিক্ষার গুণগত মান, নৈতিক সততা এবং সামাজিক দায়বদ্ধতার নীতির উপর প্রতিষ্ঠিত।'
+      title: 'আমাদের যাত্রাপথ',
+      content: '২০০৮ সালে প্রতিষ্ঠার পর থেকে, দিনা পাবলিক স্কুল অঞ্চলে শিক্ষার গুণগত মানের একটি মাইলফলক হয়ে দাঁড়িয়েছে। শিক্ষার গুণগত মান, নৈতিক সততা এবং সামাজিক দায়বদ্ধতার নীতির উপর প্রতিষ্ঠিত হয়ে, আমরা অল্প কিছুদিনের মধ্যেই মানসম্মত শিক্ষার ক্ষেত্রে একটি বিশ্বস্ত নামে পরিণত হয়েছি। সামগ্রিক বিকাশ এবং উদ্ভাবনী শিক্ষণ পদ্ধতির প্রতি আমাদের অঙ্গীকার ধারাবাহিকভাবে অসামান্য ফলাফল এনে দিয়েছে, পাশাপাশি চরিত্র গঠনের উপর আমাদের মনোভাব দায়িত্বশীল নাগরিকদের প্রজন্ম গঠনে সহায়ক হয়েছে।'
     },
     academics: {
       title: 'শিক্ষা শ্রেষ্ঠত্ব',
@@ -479,26 +515,53 @@ const HomePage = () => {
               }
             </p>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          
+          {/* Hostel Image */}
+          <div className="mb-12 max-w-4xl mx-auto rounded-2xl overflow-hidden shadow-xl">
+            <img 
+              src="https://res.cloudinary.com/dhhzoshz7/image/upload/v1762442837/hostel-dpspaharpur_ekpoxs.jpg" 
+              alt={language === 'bn' ? 'আমাদের হোস্টেলের ভিতরের দৃশ্য' : 'Our Hostel Interior'}
+              className="w-full h-auto object-cover"
+              loading="lazy"
+            />
+          </div>
+          
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 max-w-5xl mx-auto">
             {hostelFacilities.map((facility, index) => (
               <motion.div 
                 key={index}
-                className="bg-white p-8 rounded-3xl shadow-lg border border-emerald-50 hover:border-emerald-200 transition-all"
+                className="bg-white rounded-2xl shadow-lg overflow-hidden border border-emerald-50 hover:shadow-xl transition-all duration-300"
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-                whileHover={{ y: -5 }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
               >
-                <div className="w-16 h-16 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6">
-                  {facility.icon}
+                <div className="p-6">
+                  <div className="flex items-center mb-4">
+                    <div className="w-12 h-12 bg-emerald-100 rounded-xl flex items-center justify-center mr-4">
+                      {facility.icon}
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900">
+                      {language === 'bn' ? facility.titleBn : facility.title}
+                    </h3>
+                  </div>
+                  <p className="text-gray-600 mb-6">
+                    {language === 'bn' ? facility.descriptionBn : facility.description}
+                  </p>
+                  <h4 className="text-lg font-semibold text-gray-800 mb-3">
+                    {language === 'bn' ? 'সুবিধাসমূহ' : 'Facilities'}
+                  </h4>
+                  <ul className="space-y-2">
+                    {(language === 'bn' ? facility.featuresBn : facility.features).map((feature, i) => (
+                      <li key={i} className="flex items-start">
+                        <svg className="h-5 w-5 text-emerald-500 mr-2 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
+                        </svg>
+                        <span className="text-gray-600">{feature}</span>
+                      </li>
+                    ))}
+                  </ul>
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 mb-4">
-                  {language === 'bn' ? facility.titleBn : facility.title}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {language === 'bn' ? facility.descriptionBn : facility.description}
-                </p>
               </motion.div>
             ))}
           </div>
@@ -556,17 +619,28 @@ const HomePage = () => {
               initial={{ opacity: 0, x: -30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
-              className="relative"
+              className="relative h-full min-h-[500px]"
             >
               <img 
                 src="https://res.cloudinary.com/dhhzoshz7/image/upload/v1757213988/founder2_lhc5ha.jpg" 
-                alt="Founder"
-                className="w-full h-full object-cover rounded-2xl"
+                alt={t.founder.name}
+                className="w-full h-full object-cover rounded-2xl shadow-xl"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent flex items-end p-8 rounded-2xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-between p-8 rounded-2xl">
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.3 }}
+                  className="bg-white/10 backdrop-blur-sm p-6 rounded-xl max-w-md"
+                >
+                  <h3 className="text-2xl font-bold text-white mb-2">{t.founder.name}</h3>
+                  <p className="text-emerald-300 font-medium mb-4">{t.founder.position}</p>
+                  <p className="text-white/90 italic">"{t.founder.vision}"</p>
+                </motion.div>
                 <div className="text-white">
                   <h3 className="text-2xl font-bold">{t.founder.name}</h3>
-                  <p className="text-emerald-400">{t.founder.position}</p>
+                  <p className="text-emerald-300 font-medium">{t.founder.position}</p>
                 </div>
               </div>
             </motion.div>
@@ -575,16 +649,38 @@ const HomePage = () => {
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
             >
-              <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">{t.founder.title}</h2>
-              <div className="w-20 h-1 bg-emerald-600 mb-8"></div>
-              <FiMessageSquare className="text-4xl text-emerald-100 mb-6" />
-              <p className="text-xl text-gray-700 italic leading-relaxed mb-8">
-                "{t.founder.quote}"
-              </p>
-              <div className="p-6 bg-emerald-50 rounded-2xl border border-emerald-100">
-                <h4 className="font-bold text-gray-900 mb-2">{t.about.title}</h4>
-                <p className="text-gray-600">{t.about.content}</p>
-              </div>
+              <motion.div
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.2 }}
+              >
+                <h2 className="text-3xl md:text-4xl font-bold mb-6 text-gray-900">{t.founder.title}</h2>
+                <div className="w-20 h-1 bg-emerald-600 mb-8"></div>
+                
+                <div className="relative pl-6 mb-8 border-l-4 border-emerald-100">
+                  <FiMessageSquare className="absolute -left-8 top-0 text-4xl text-emerald-100" />
+                  <p className="text-xl text-gray-700 italic leading-relaxed">
+                    "{t.founder.quote}"
+                  </p>
+                </div>
+                
+                <motion.div 
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                  className="p-8 bg-gradient-to-br from-emerald-50 to-white rounded-2xl border border-emerald-50 shadow-sm hover:shadow-md transition-shadow duration-300"
+                >
+                  <h4 className="text-2xl font-bold text-emerald-800 mb-4 flex items-center">
+                    <FiBookOpen className="mr-3 text-emerald-600" />
+                    {t.about.title}
+                  </h4>
+                  <p className="text-gray-700 leading-relaxed">
+                    {t.about.content}
+                  </p>
+                </motion.div>
+              </motion.div>
             </motion.div>
           </div>
         </div>
@@ -664,9 +760,12 @@ const HomePage = () => {
             </p>
             <div className="flex justify-center gap-4 relative z-10">
               <a 
-                href="mailto:dinapublicschool@gmail.com" 
-                className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-xl"
+                href="https://wa.me/916295884463" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="px-8 py-4 bg-white text-emerald-700 rounded-xl font-bold hover:bg-gray-100 transition-all shadow-xl flex items-center gap-2"
               >
+                <FiMessageSquare className="text-xl" />
                 {t.cta.btn}
               </a>
             </div>
