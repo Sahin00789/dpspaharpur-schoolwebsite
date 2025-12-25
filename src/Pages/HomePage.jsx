@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom';
 import { 
   FiArrowRight, 
   FiAward, 
+  FiBook,
   FiBookOpen, 
   FiUsers, 
   FiCalendar, 
@@ -28,11 +29,6 @@ import { GALLERY_IMAGES, GALLERY_CATEGORIES } from '../data/galleryImages';
 import { useLanguage } from '../contexts/LanguageContext';
 
 const features = [
-  {
-    icon: <FiAward className="w-6 h-6 text-emerald-600" />,
-    title: 'Academic Excellence',
-    description: 'Consistently achieving outstanding results with a focus on holistic education.',
-  },
   {
     icon: <FiBookOpen className="w-6 h-6 text-emerald-600" />,
     title: 'Modern Curriculum',
@@ -78,6 +74,30 @@ const statistics = [
     suffix: '+',
     label: 'Years of Excellence',
     labelBn: 'শ্রেষ্ঠত্বের বছর'
+  }
+];
+
+const academicLevels = [
+  {
+    title: 'Pre-Primary',
+    titleBn: 'প্রি-প্রাইমারি',
+    description: 'Play-based learning for cognitive and social skills.',
+    descriptionBn: 'জ্ঞানীয় এবং সামাজিক দক্ষতার জন্য খেলার মাধ্যমে শেখা।',
+    icon: <FiBookOpen className="w-8 h-8 text-emerald-600" />
+  },
+  {
+    title: 'Primary',
+    titleBn: 'প্রাথমিক',
+    description: 'Foundational learning with emphasis on literacy.',
+    descriptionBn: 'সাক্ষরতা এবং সংখ্যার উপর জোর দিয়ে মৌলিক শিক্ষা।',
+    icon: <FiBook className="w-8 h-8 text-emerald-600" />
+  },
+  {
+    title: 'Upper Primary',
+    titleBn: 'উচ্চ প্রাথমিক',
+    description: 'Structured learning with core subjects.',
+    descriptionBn: 'মূল বিষয়গুলির সাথে কাঠামোবদ্ধ শিক্ষা।',
+    icon: <FiAward className="w-8 h-8 text-emerald-600" />
   }
 ];
 
@@ -500,6 +520,48 @@ const HomePage = () => {
         </div>
       </section>
 
+      {/* Academic Excellence Section */}
+      <section className="py-16 bg-white">
+        <div className="container mx-auto px-6">
+          <div className="text-center mb-12">
+            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">
+              {language === 'bn' ? 'শিক্ষাগত শ্রেষ্ঠত্ব' : 'Academic Excellence'}
+            </h2>
+            <div className="w-20 h-1 bg-emerald-600 mx-auto mb-6"></div>
+            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+              {language === 'bn'
+                ? 'ভারসাম্যপূর্ণ পাঠ্যক্রম এবং উদ্ভাবনী শিক্ষাদান পদ্ধতির মাধ্যমে তরুণ মেধা বিকাশ'
+                : 'Nurturing young minds through a balanced curriculum and innovative teaching methodologies'
+              }
+            </p>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+            {academicLevels.map((level, index) => (
+              <motion.div
+                key={index}
+                className="bg-white rounded-2xl shadow-lg border border-emerald-50 hover:shadow-xl transition-all duration-300"
+                initial={{ opacity: 0, y: 30 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: index * 0.1, duration: 0.5 }}
+              >
+                <div className="p-6 text-center">
+                  <div className="w-16 h-16 bg-emerald-50 rounded-2xl flex items-center justify-center mx-auto mb-4">
+                    {level.icon}
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-3">
+                    {language === 'bn' ? level.titleBn : level.title}
+                  </h3>
+                  <p className="text-gray-600">
+                    {language === 'bn' ? level.descriptionBn : level.description}
+                  </p>
+                </div>
+              </motion.div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* Hostel Facilities Section */}
       <section className="py-20 bg-emerald-50/30">
         <div className="container mx-auto px-6">
@@ -684,34 +746,7 @@ const HomePage = () => {
         </div>
       </section>
 
-      {/* Academics Section */}
-      <section id="academics" className="py-20 bg-gray-50/50">
-        <div className="container mx-auto px-6">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{t.academics.title}</h2>
-            <div className="w-20 h-1 bg-emerald-600 mx-auto mb-6"></div>
-            <p className="text-xl text-gray-600 max-w-3xl mx-auto">{t.academics.subtitle}</p>
-          </div>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-            {t.academics.curriculum.map((item, index) => (
-              <motion.div 
-                key={index}
-                className="bg-white p-8 rounded-3xl shadow-lg border border-emerald-50 hover:border-emerald-200 transition-all"
-                initial={{ opacity: 0, y: 20 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: index * 0.1 }}
-              >
-                <div className="w-12 h-12 bg-emerald-100 rounded-2xl flex items-center justify-center mb-6 text-emerald-600">
-                  <FiBookOpen size={24} />
-                </div>
-                <h3 className="text-xl font-bold mb-4">{item.level}</h3>
-                <p className="text-gray-600">{item.desc}</p>
-              </motion.div>
-            ))}
-          </div>
-        </div>
-      </section>
+     
 
       {/* Lightbox */}
       <AnimatePresence>
