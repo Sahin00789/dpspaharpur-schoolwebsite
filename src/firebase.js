@@ -1,5 +1,5 @@
-// Firebase configuration and initialization
-import { initializeApp } from 'firebase/app';
+// firebase.js - Firebase configuration and initialization
+import { initializeApp, getApp, getApps } from 'firebase/app';
 import { 
   getAuth, 
   GoogleAuthProvider, 
@@ -7,195 +7,152 @@ import {
   signInWithRedirect,
   getRedirectResult,
   signOut as firebaseSignOut,
-  onAuthStateChanged
+  onAuthStateChanged 
 } from 'firebase/auth';
-import { 
-  getFirestore, 
-  doc, 
-  setDoc, 
-  getDoc, 
-  serverTimestamp as firestoreServerTimestamp, 
-  enableIndexedDbPersistence 
-} from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
+import { getFirestore, collection, query, where, getDocs, getDoc, addDoc, updateDoc, deleteDoc, doc, orderBy } from 'firebase/firestore';
 
-// Your web app's Firebase configuration
+// Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyAhfBV2ifR8GG2xOUk2F4kKIMaqdEtbF-k",
-  authDomain: "dpspaharpur-1a2b3.firebaseapp.com",
+  authDomain: "dpspaharpur.firebaseapp.com",
   projectId: "dpspaharpur",
-  storageBucket: "dpspaharpur.appspot.com",
+  storageBucket: "dpspaharpur.firebasestorage.app",
   messagingSenderId: "786003538204",
-  appId: "1:786003538204:web:e212f2767df2684633cad9",
-  measurementId: "G-XXXXXXXXXX"
+  appId: "1:786003538204:web:e212f2767df2684633cad9"
 };
 
-// Initialize Firebase with error handling
+// Initialize Firebase
 let app;
+let auth;
+let db;
+const googleProvider = new GoogleAuthProvider();
+
 try {
-  app = initializeApp(firebaseConfig);
+  // Initialize Firebase only if it hasn't been initialized yet
+  app = !getApps().length ? initializeApp(firebaseConfig) : getApp();
+  auth = getAuth(app);
+  db = getFirestore(app);
+  
   console.log('Firebase initialized successfully');
 } catch (error) {
   console.error('Firebase initialization error:', error);
+  throw new Error('Failed to initialize Firebase: ' + error.message);
 }
 
-// Initialize services with CORS configuration
-const auth = getAuth(app);
-const db = getFirestore(app);
-const storage = getStorage(app);
-
-// Configure Firestore for offline persistence
-enableIndexedDbPersistence(db).catch((err) => {
-  if (err.code === 'failed-precondition') {
-    console.warn('Offline persistence can only be enabled in one tab at a time.');
-  } else if (err.code === 'unimplemented') {
-    console.warn('The current browser does not support offline persistence.');
-  }
-});
-
-// Initialize Google Auth Provider with CORS support
-const googleProvider = new GoogleAuthProvider();
-
-// Configure the Google provider with CORS support
-googleProvider.setCustomParameters({
-  prompt: 'select_account',  // Always show account chooser
-  login_hint: '',
-  hd: '*',
-  include_granted_scopes: 'true',  // Include granted scopes for incremental auth
-  // Add CORS headers to Google OAuth requests
-  'X-Requested-With': 'XMLHttpRequest',
-  'Access-Control-Allow-Origin': window.location.origin,
-  'Access-Control-Allow-Credentials': 'true'
-});
-
-// Add required scopes
-googleProvider.addScope('email');
-googleProvider.addScope('profile');
-
-// Enable account selection
-googleProvider.setCustomParameters({
-  prompt: 'select_account',
-  login_hint: ''
-});
-
-// Auth functions
-const signInWithGoogle = async () => {
+// Google Sign In with popup
+export const signInWithGoogle = async () => {
   try {
-    // Clear any existing auth state
-    await auth.signOut();
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
     
-    // Sign in with popup
-    const result = await signInWithPopup(auth, googleProvider);
-    
-    // Force token refresh to ensure fresh credentials
-    await result.user.getIdToken(true);
-    
-    return result;
+    if (isMobile) {
+      // On mobile, use redirect
+      const provider = new GoogleAuthProvider();
+      await signInWithRedirect(auth, provider);
+      // The redirect result will be handled in the component
+      return { user: null, token: null };
+    } else {
+      // On desktop, use popup
+      const result = await signInWithPopup(auth, googleProvider);
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      const user = result.user;
+      return { user, token };
+    }
   } catch (error) {
-    console.error('Google sign-in error:', error);
+    console.error('Error signing in with Google:', error);
     throw error;
   }
 };
-const signOutUser = () => firebaseSignOut(auth);
 
-// Helper function to get a document from Firestore
-const getDocument = async (collection, id) => {
-  const docRef = doc(db, collection, id);
-  const docSnap = await getDoc(docRef);
-  return docSnap.exists() ? docSnap.data() : null;
-};
-
-// Helper function to set a document in Firestore
-const setDocument = async (collection, id, data) => {
-  await setDoc(doc(db, collection, id), data, { merge: true });
-};
-
-// Enable offline persistence in a non-blocking way
-const initPersistence = async () => {
-  if (process.env.NODE_ENV !== 'production') return;
-  
+// Check for redirect result
+export const handleRedirectResult = async () => {
   try {
-    await enableIndexedDbPersistence(db, { 
-      experimentalForceOwningTab: true 
-    });
-    console.log('Offline persistence enabled');
-  } catch (error) {
-    if (error.code === 'failed-precondition') {
-      console.warn('Offline persistence can only be enabled in one tab at a time.');
-    } else if (error.code === 'unimplemented') {
-      console.warn('The current browser does not support offline persistence.');
+    const result = await getRedirectResult(auth);
+    if (result) {
+      const credential = GoogleAuthProvider.credentialFromResult(result);
+      const token = credential.accessToken;
+      const user = result.user;
+      return { user, token };
     }
-    console.error('Error enabling offline persistence:', error);
+    return { user: null, token: null };
+  } catch (error) {
+    console.error('Error getting redirect result:', error);
+    throw error;
   }
 };
 
-// Start persistence initialization but don't wait for it
-initPersistence().catch(console.error);
-
-console.log('Firebase initialized successfully');
-
-// Export all necessary variables and functions
-export const firebaseApp = app;
-export const firebaseAuth = auth;
-export const firestore = db;
-export const firebaseStorage = storage;
-
-export {
-  // Core Firebase services
-  app,
-  auth,
-  db,
-  storage,
-  
-  // Auth providers and functions
-  googleProvider,
-  GoogleAuthProvider,
-  signInWithGoogle,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  onAuthStateChanged,
-  
-  // Firestore helpers
-  doc,
-  setDoc,
-  getDoc,
-  
-  // Custom helpers
-  getDocument,
-  setDocument
+// Sign Out
+export const signOut = async () => {
+  try {
+    await firebaseSignOut(auth);
+  } catch (error) {
+    console.error('Sign Out Error:', error);
+    throw error;
+  }
 };
 
-// Export serverTimestamp separately
-export const serverTimestamp = firestoreServerTimestamp;
-// Export signOut separately
-export const signOut = signOutUser;
+// Auth State Observer
+export const onAuthStateChange = (callback) => {
+  return onAuthStateChanged(auth, callback);
+};
 
-// Default export for backward compatibility
-export default {
-  // Core Firebase services
-  app,
-  auth,
-  db,
-  storage,
+// Firestore functions
+export const getNotices = async () => {
+  const q = query(collection(db, 'notices'), orderBy('createdAt', 'desc'));
+  const querySnapshot = await getDocs(q);
+  return querySnapshot.docs.map(doc => ({
+    id: doc.id,
+    ...doc.data()
+  }));
+};
+
+export const addNotice = async (notice) => {
+  const docRef = await addDoc(collection(db, 'notices'), {
+    ...notice,
+    createdAt: new Date().toISOString(),
+    updatedAt: new Date().toISOString(),
+    status: 'active'
+  });
+  return docRef.id;
+};
+
+export const updateNotice = async (id, updates) => {
+  await updateDoc(doc(db, 'notices', id), {
+    ...updates,
+    updatedAt: new Date().toISOString()
+  });
+};
+
+export const deleteNotice = async (id) => {
+  await deleteDoc(doc(db, 'notices', id));
+};
+
+export const getNoticeById = async (id) => {
+  const docRef = doc(db, 'notices', id);
+  const docSnap = await getDoc(docRef);
   
-  // Auth providers and functions
-  googleProvider,
-  GoogleAuthProvider,
-  signInWithGoogle,
-  signInWithPopup,
-  signInWithRedirect,
-  getRedirectResult,
-  signOut: signOutUser,
-  onAuthStateChanged,
-  
-  // Firestore helpers
+  if (docSnap.exists()) {
+    return {
+      id: docSnap.id,
+      ...docSnap.data()
+    };
+  } else {
+    throw new Error('No such document!');
+  }
+};
+
+export { 
+  app, 
+  auth, 
+  db, 
+  googleProvider, 
+  collection, 
+  query, 
+  where, 
+  getDocs, 
+  addDoc, 
+  updateDoc, 
+  deleteDoc, 
   doc,
-  setDoc,
-  getDoc,
-  serverTimestamp: firestoreServerTimestamp,
-  
-  // Custom helpers
-  getDocument,
-  setDocument
+  orderBy 
 };

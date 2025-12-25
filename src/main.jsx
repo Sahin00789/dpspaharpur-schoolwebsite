@@ -2,24 +2,10 @@ import { StrictMode } from 'react';
 import { createRoot } from 'react-dom/client';
 import { BrowserRouter } from 'react-router-dom';
 import { ErrorBoundary } from 'react-error-boundary';
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools';
-import { Toaster } from 'react-hot-toast';
 import { HelmetProvider } from 'react-helmet-async';
-import ErrorFallback from './components/ErrorFallback';
 import './index.css';
 import App from './App';
-
-// Create a client for React Query
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      staleTime: 1000 * 60 * 5, // 5 minutes
-      refetchOnWindowFocus: false,
-      retry: 1,
-    },
-  },
-});
+import { LanguageProvider } from './contexts/LanguageContext';
 
 // Error boundary fallback component
 function ErrorBoundaryFallback({ error, resetErrorBoundary }) {
@@ -44,19 +30,15 @@ function ErrorBoundaryFallback({ error, resetErrorBoundary }) {
 // Main App Wrapper
 function AppWithProviders() {
   return (
-    <HelmetProvider>
-      <QueryClientProvider client={queryClient}>
+    <LanguageProvider>
+      <HelmetProvider>
         <BrowserRouter>
           <ErrorBoundary FallbackComponent={ErrorBoundaryFallback}>
             <App />
-            <Toaster position="bottom-center" />
-            {process.env.NODE_ENV === 'development' && (
-              <ReactQueryDevtools initialIsOpen={false} />
-            )}
           </ErrorBoundary>
         </BrowserRouter>
-      </QueryClientProvider>
-    </HelmetProvider>
+      </HelmetProvider>
+    </LanguageProvider>
   );
 }
 

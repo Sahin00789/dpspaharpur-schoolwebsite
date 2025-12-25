@@ -1,63 +1,100 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
+import { visualizer } from 'rollup-plugin-visualizer';
 
 // https://vite.dev/config/
-export default defineConfig({
-  plugins: [react()],
-  build: {
-    chunkSizeWarningLimit: 1500, // Increased chunk size warning limit
-    rollupOptions: {
-      output: {
-        manualChunks: (id) => {
-          // Create a Firebase chunk
-          if (id.includes('firebase/app') || id.includes('firebase/firestore')) {
-            return 'firebase';
-          }
-          // Create a vendor chunk for node_modules
-          if (id.includes('node_modules')) {
-            // Group React and related libraries
-            if (id.includes('react') || id.includes('scheduler') || id.includes('scheduler/')) {
-              return 'vendor-react';
-            }
-            // Group form-related libraries
-            if (id.includes('react-hook-form') || id.includes('yup') || id.includes('@hookform')) {
-              return 'vendor-forms';
-            }
-            // Group UI libraries
-            if (id.includes('@chakra-ui') || id.includes('framer-motion') || id.includes('@emotion')) {
-              return 'vendor-ui';
-            }
-            // Group utility libraries
-            if (id.includes('date-fns') || id.includes('lodash') || id.includes('axios')) {
-              return 'vendor-utils';
-            }
-            // Default vendor chunk for other node_modules
-            return 'vendor';
-          }
+export default defineConfig(({ command, mode }) => {
+  const isProduction = mode === 'production';
+
+  return {
+    plugins: [
+      react({
+        // Use the automatic JSX runtime
+        jsxRuntime: 'automatic',
+        // Use React as the JSX import source
+        jsxImportSource: 'react',
+        // Enable fast refresh in development
+        fastRefresh: !isProduction,
+        // Ensure React is imported automatically
+        babel: {
+          plugins: [
+            ['@babel/plugin-transform-react-jsx', {
+              runtime: 'automatic',
+              importSource: 'react'
+            }]
+          ]
+        }
+      }),
+      // Visualize bundle size (only in production build)
+      isProduction && visualizer({
+        open: true,
+        gzipSize: true,
+        brotliSize: true,
+      }),
+    ].filter(Boolean),
+    
+    resolve: {
+      alias: {
+        '@': '/src',
+      },
+      extensions: ['.js', '.jsx', '.json', '.mjs'],
+    },
+    
+    server: {
+      port: 5173,
+      strictPort: true,
+      open: true,
+      fs: {
+        allow: ['..'],
+      },
+      hmr: {
+        overlay: false
+      }
+    },
+    
+    publicDir: 'public',
+    
+    build: {
+      outDir: 'dist',
+      assetsDir: 'assets',
+      emptyOutDir: true,
+      sourcemap: isProduction ? false : 'hidden',
+      minify: 'esbuild',
+      chunkSizeWarningLimit: 1000,
+      // Disable SSR
+      ssr: false,
+      // Optimize dependencies to ensure React is properly bundled
+      commonjsOptions: {
+        transformMixedEsModules: true,
+        include: [/node_modules/],
+        esmExternals: true
+      },
+      // Configure Rollup for optimal chunking
+      rollupOptions: {
+        // Don't externalize React - we want it bundled
+        external: [],
+        output: {
+          // Disable manual chunks to ensure React is bundled properly
+          manualChunks: undefined,
+          // Use consistent file naming
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash][extname]',
+          // Use ESM format
+          format: 'esm',
+          // Don't use globals - let the modules handle their own imports
+          globals: {}
         },
-        chunkFileNames: 'assets/[name]-[hash].js',
-        entryFileNames: 'assets/[name]-[hash].js',
-        assetFileNames: 'assets/[name]-[hash][extname]',
+      },
+      // Remove console.log in production
+      esbuild: {
+        drop: isProduction ? ['console', 'debugger'] : [],
       },
     },
-  },
-  optimizeDeps: {
-    include: [
-      'react',
-      'react-dom',
-      'react-router-dom',
-      'firebase/app',
-      'firebase/firestore',
-      'firebase/storage',
-      'firebase/auth'
-    ],
-    exclude: [],
-  },
-  server: {
-    open: true,
-  },
-  preview: {
-    port: 3000,
-    strictPort: true,
-  },
+    
+    preview: {
+      port: 5173,
+      strictPort: true,
+    },
+  };
 });

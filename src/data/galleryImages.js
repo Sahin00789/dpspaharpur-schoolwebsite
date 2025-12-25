@@ -1,9 +1,21 @@
+// Gallery categories
+export const GALLERY_CATEGORIES = [
+  { id: 'all', name: 'All Categories' },
+  { id: 'sports', name: 'Sports' },
+  { id: 'events', name: 'Events' },
+  { id: 'classroom', name: 'Classroom' },
+  { id: 'campus', name: 'Campus' },
+  { id: 'achievements', name: 'Achievements' },
+  { id: 'republic-day', name: 'Republic Day' },
+  { id: 'environment', name: 'Environment' }
+];
+
 // Gallery images with categories
 export const GALLERY_IMAGES = [
   {
     id: 1,
     title: 'Students Learning',
-    category: 'Students',
+    category: 'classroom',
     url: 'https://res.cloudinary.com/dhhzoshz7/image/upload/v1757213993/students_dfwsbi.jpg',
     thumbnail: 'https://res.cloudinary.com/dhhzoshz7/image/upload/c_thumb,w_300,h_200/v1757213993/students_dfwsbi.jpg',
     date: '2024-09-01',
@@ -21,7 +33,7 @@ export const GALLERY_IMAGES = [
   {
     id: 3,
     title: 'Environment Day',
-    category: 'events',
+    category: 'environment',
     url: 'https://res.cloudinary.com/dhhzoshz7/image/upload/v1757213978/environment_day_umhcwl.jpg',
     thumbnail: 'https://res.cloudinary.com/dhhzoshz7/image/upload/c_thumb,w_300,h_200/v1757213978/environment_day_umhcwl.jpg',
     date: '2024-06-05',
@@ -30,7 +42,7 @@ export const GALLERY_IMAGES = [
   {
     id: 4,
     title: 'Republic Day',
-    category: 'events',
+    category: 'republic-day',
     url: 'https://res.cloudinary.com/dhhzoshz7/image/upload/v1757213976/republic_day_ep19bz.jpg',
     thumbnail: 'https://res.cloudinary.com/dhhzoshz7/image/upload/c_thumb,w_300,h_200/v1757213976/republic_day_ep19bz.jpg',
     date: '2024-01-26',
@@ -57,22 +69,10 @@ export const GALLERY_IMAGES = [
   {
     id: 7,
     title: 'Republic Day Celebration',
-    category: 'events',
+    category: 'republic-day',
     url: 'https://res.cloudinary.com/dhhzoshz7/image/upload/v1757213941/republic_day_2_x6blwy.jpg',
     thumbnail: 'https://res.cloudinary.com/dhhzoshz7/image/upload/c_thumb,w_300,h_200/v1757213941/republic_day_2_x6blwy.jpg',
     date: '2024-01-26',
     description: 'Students and teachers celebrating Republic Day with enthusiasm.'
   }
-];
-
-// Gallery categories
-export const GALLERY_CATEGORIES = [
-  { id: 'all', name: 'All Categories' },
-  { id: 'sports', name: 'Sports' },
-  { id: 'events', name: 'Events' },
-  { id: 'classroom', name: 'Classroom' },
-  { id: 'campus', name: 'Campus' },
-  { id: 'achievements', name: 'Achievements' },
-  { id: 'republic-day', name: 'Republic Day' },
-  { id: 'environment', name: 'Environment' }
 ];

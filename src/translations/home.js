@@ -1,0 +1,53 @@
+const homeTranslations = {
+  en: {
+    welcome: "Welcome to Dina Public School",
+    motto: "Nurturing Excellence, Inspiring Futures",
+    aboutTitle: "About Our Institution",
+    aboutText: "Dina Public School is dedicated to providing quality education and fostering holistic development for every student, preparing them for a successful future.",
+    facilitiesTitle: "Our World-Class Facilities",
+    admissionTitle: "Admissions Now Open",
+    admissionText: "Secure your child's place for the upcoming academic session",
+    contactTitle: "Get in Touch",
+    address: "Address",
+    phone: "Phone",
+    email: "Email",
+    hours: "School Hours",
+    viewDetails: "Explore More",
+    viewAll: "View All",
+    readMore: "Discover More",
+    latestNews: "Latest Updates & Announcements",
+    viewAllNews: "All News",
+    ourCampuses: "Our Campus Network",
+    exploreCampuses: "Discover our educational campuses"
+  },
+  bn: {
+    welcome: "দীনা পাবলিক স্কুলে স্বাগতম",
+    motto: "মেধা বিকাশ, ভবিষ্যৎ নির্মাণ",
+    aboutTitle: "আমাদের প্রতিষ্ঠান সম্পর্কে",
+    aboutText: "দীনা পাবলিক স্কুল প্রতিটি শিক্ষার্থীর মানসম্মত শিক্ষা এবং সামগ্রিক বিকাশ নিশ্চিত করে, তাদেরকে একটি সফল ভবিষ্যতের জন্য প্রস্তুত করে।",
+    resultsTitle: "পরীক্ষার ফলাফল",
+    resultsDescription: "আমাদের স্কুলে LKG-UKG (নার্সারি) থেকে ক্লাস VI পর্যন্ত শিক্ষার্থীদের মেধা বিকাশে বিশেষ গুরুত্ব দেওয়া হয়। আমাদের ব্যাপক মূল্যায়ন পদ্ধতি প্রতিটি শিক্ষার্থীর অগ্রগতি নিবিড়ভাবে পর্যবেক্ষণ করে।",
+    lkgUkg: "LKG-UKG",
+    lkgUkgDesc: "খেলার মাধ্যমে শিক্ষা এবং প্রাথমিক বিকাশ",
+    classOneToSix: "প্রথম-ষষ্ঠ শ্রেণি",
+    classOneToSixDesc: "কাঠামোগত পাঠ্যক্রম এবং সামগ্রিক উন্নয়ন",
+    viewResults: "সকল ফলাফল দেখুন",
+    facilitiesTitle: "আমাদের আধুনিক সুবিধাসমূহ",
+    admissionTitle: "নতুন ভর্তি চলমান",
+    admissionText: "আসন্ন শিক্ষাবর্ষে আপনার সন্তানের ভর্তি নিশ্চিত করুন",
+    contactTitle: "যোগাযোগ করুন",
+    address: "ঠিকানা",
+    phone: "ফোন",
+    email: "ইমেইল",
+    hours: "স্কুল সময়সূচি",
+    viewDetails: "বিস্তারিত জানুন",
+    viewAll: "সবগুলো দেখুন",
+    readMore: "আরও পড়ুন",
+    latestNews: "সর্বশেষ খবর ও ঘোষণা",
+    viewAllNews: "সকল খবর",
+    ourCampuses: "আমাদের শিক্ষাঙ্গন",
+    exploreCampuses: "আমাদের শিক্ষা প্রতিষ্ঠান পরিদর্শন করুন"
+  }
+};
+
+export default homeTranslations;
