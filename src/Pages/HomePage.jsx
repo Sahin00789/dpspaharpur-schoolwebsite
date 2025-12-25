@@ -626,22 +626,20 @@ const HomePage = () => {
                 alt={t.founder.name}
                 className="w-full h-full object-cover rounded-2xl shadow-xl"
               />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent flex flex-col justify-between p-8 rounded-2xl">
+              <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent flex flex-col justify-end p-4 sm:p-6 rounded-2xl">
                 <motion.div 
                   initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
                   transition={{ delay: 0.3 }}
-                  className="bg-white/10 backdrop-blur-sm p-6 rounded-xl max-w-md"
+                  className="bg-white/5 backdrop-blur-sm p-4 sm:p-5 rounded-xl border border-white/10 shadow-lg w-full max-w-[90%] mx-auto mb-4 sm:mb-8"
                 >
-                  <h3 className="text-2xl font-bold text-white mb-2">{t.founder.name}</h3>
-                  <p className="text-emerald-300 font-medium mb-4">{t.founder.position}</p>
-                  <p className="text-white/90 italic">"{t.founder.vision}"</p>
+                  <p className="text-white/90 italic text-sm sm:text-base md:text-lg leading-relaxed mb-3 sm:mb-4">"{t.founder.vision}"</p>
+                  <div className="pt-3 sm:pt-4 border-t border-white/10">
+                    <h3 className="text-base sm:text-lg md:text-xl font-bold text-white">{t.founder.name}</h3>
+                    <p className="text-emerald-300 font-medium text-sm sm:text-base">{t.founder.position}</p>
+                  </div>
                 </motion.div>
-                <div className="text-white">
-                  <h3 className="text-2xl font-bold">{t.founder.name}</h3>
-                  <p className="text-emerald-300 font-medium">{t.founder.position}</p>
-                </div>
               </div>
             </motion.div>
             <motion.div
